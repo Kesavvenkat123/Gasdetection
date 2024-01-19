@@ -1,2 +1,2 @@
 # Gasdetection
-this is an iot project which is used to detect the lekage of gases and its range in atmoshere
+This is an IOT Project which is used to detect the lekage of various gases, it also sends the information of gas lekage to near fire safety depaartment, and also give an warning alarm to near by peoples.

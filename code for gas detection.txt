@@ -1,0 +1,103 @@
+#include <LiquidCrystal.h>
+//LiquidCrystal lcd(2,3,4,5,6,7);
+#include <SoftwareSerial.h>
+ #include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+SoftwareSerial mySerial(2,3);
+ // Set the LCD address to 0x27 for a 16 chars and 2 line display
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+int gasValue = A0; // smoke / gas sensor connected with analog pin A1 of the arduino / mega.
+int data = 0;
+int buzzer = 13;
+int G_led = 12; // choose the pin for the Green LED
+int R_led = 11; // choose the pin for the Red Led
+int R_led1 = 8; // choose the pin for the Red Led
+int sw = 7; // choose the pin for the Red Led
+
+
+ 
+void setup()
+{
+  pinMode(buzzer,OUTPUT);
+  pinMode(R_led,OUTPUT); // declare Red LED as output
+  pinMode(R_led1,OUTPUT); // declare Red LED as output
+  pinMode(G_led,OUTPUT); // declare Green LED as output
+  pinMode(sw,INPUT); // declare Green LED as output
+randomSeed(analogRead(0));
+mySerial.begin(9600); // Setting the baud rate of GSM Module
+Serial.begin(9600); // Setting the baud rate of Serial Monitor (Arduino)
+lcd.init();                      // initialize the lcd 
+ lcd.init();
+ //Print a message to the LCD.
+  lcd.backlight();
+lcd.begin(16,2);
+lcd.backlight();      
+pinMode(gasValue, INPUT);
+lcd.print (" WELCOME T0 ");
+lcd.setCursor(0,1);
+lcd.print ("OUR PROJECT ");
+delay(3000);
+lcd.clear();
+}
+ 
+void loop()
+{
+ int fire=digitalRead(sw);
+data = analogRead(gasValue/100);
+Serial.print("GAS Level: ");
+Serial.println(data);
+lcd.print ("GAS Scan is ON");
+lcd.setCursor(0,1);
+lcd.print("GAS Level: ");
+lcd.print(data);
+delay(1000);
+ 
+if ( data >40 ) //
+{
+  digitalWrite(buzzer, HIGH);
+  digitalWrite(R_led, HIGH); // Turn LED on.
+  digitalWrite(R_led1, HIGH); // Turn LED on.
+  digitalWrite(G_led, LOW); // Turn LED off.
+SendMessage();
+Serial.print("GAS detect alarm");
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print(" GAS DT ");
+lcd.setCursor(0,1);
+lcd.print("SMS Sent");
+
+delay(1000);
+ 
+}
+else
+{
+  digitalWrite(buzzer, LOW);
+  digitalWrite(R_led, LOW); // Turn LED off.
+  digitalWrite(R_led1, LOW); // Turn LED off.
+  digitalWrite(G_led, HIGH); // Turn LED on.
+Serial.print("GAS Level Low");
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("GAS Level Normal");
+
+delay(1000);
+}
+ 
+lcd.clear();
+
+}
+ 
+void SendMessage()
+{
+Serial.println("I am in send");
+mySerial.println("AT+CMGF=1"); //Sets the GSM Module in Text Mode
+delay(1000); // Delay of 1000 milli seconds or 1 second
+mySerial.println("AT+CMGS=\"+919014623116\"\r"); // Replace x with mobile number
+delay(1000);
+mySerial.println("Excess GAS Detected..AT.");// The SMS text you want to send
+//mySerial.println("https://www.google.com/maps/place/MIC+College+of+Technology/@16.6912141,80.3607401,17z/data=!3m1!4b1!4m6!3m5!1s0x3a35bdfe4c02e0c1:0xf59820066fefa912!8m2!3d16.691209!4d80.363315!16s%2Fg%2F1hdzbxz1z?entry=ttu");// The SMS text you want to send
+mySerial.println(data);
+delay(100);
+mySerial.println((char)26);// ASCII code of CTRL+Z
+delay(1000);
+}
